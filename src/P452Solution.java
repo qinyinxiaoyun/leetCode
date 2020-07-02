@@ -1,10 +1,11 @@
 import java.util.Arrays;
+import java.util.Comparator;
 
 public class P452Solution {
     public int findMinArrowShots(int[][] points) {
         if (points.length == 0)return 0;
         int shots = 1;
-        Arrays.sort(points,(a,b)->a[0]-b[0]);
+        Arrays.sort(points, Comparator.comparingInt(a -> a[0]));
         int end = points[0][1];
         for (int[] a:points){
             if (a[0] <= end){

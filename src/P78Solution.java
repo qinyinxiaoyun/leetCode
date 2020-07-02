@@ -25,4 +25,40 @@ public class P78Solution {
         List<List<Integer>> list = subsets(nums);
         System.out.println(list);
     }
+    /**
+     * new solution use bits
+     */
+    public List<List<Integer>> subsets2(int[] nums){
+        List<List<Integer>> result = new ArrayList<>();
+        int n = nums.length;
+        int limit = 1<<n;
+        for (int i = 0;i < limit;i++){
+            List<Integer> item = new ArrayList<>();
+            for (int j = 0;j < n;j++){
+                if ((i&1<<j)!=0){
+                    item.add(nums[j]);
+                }
+            }
+            result.add(item);
+        }
+        return result;
+    }
+    @Test
+    public void newTest(){
+        int[] nums = {4,5,6};
+        List<List<Integer>> res = subsets2(nums);
+        System.out.println(res);
+    }
+    /**
+     * backtrace
+     */
+    public List<List<Integer>> subsets3(int[] nums){
+        List<List<Integer>> result = new ArrayList<>();
+        private void adding(int[] num){
+            if (num != null){
+
+            }
+        }
+        return result;
+    }
 }
