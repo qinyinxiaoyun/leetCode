@@ -54,11 +54,27 @@ public class P78Solution {
      */
     public List<List<Integer>> subsets3(int[] nums){
         List<List<Integer>> result = new ArrayList<>();
-        private void adding(int[] num){
-            if (num != null){
-
-            }
-        }
+        ArrayList<Integer> n = new ArrayList<>();
+        result.add(n);
+        adding(n,result,0,nums);
         return result;
+    }
+    private void adding(ArrayList<Integer> num, List<List<Integer>> result, int n,int[] nums){
+        if (nums.length == n){
+            return;
+        }
+        else {
+            num.add(nums[n]);
+            result.add((List<Integer>) num.clone());
+            adding(num, result, n + 1, nums);
+            num.remove(num.size() - 1);
+            adding(num, result, n + 1, nums);
+        }
+    }
+    @Test
+    public void Test3(){
+        int[] nums = {7,8,9};
+        List<List<Integer>> res = subsets3(nums);
+        System.out.println(res);
     }
 }
