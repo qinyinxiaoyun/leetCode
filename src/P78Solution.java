@@ -1,6 +1,7 @@
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class P78Solution {
@@ -54,26 +55,23 @@ public class P78Solution {
      */
     public List<List<Integer>> subsets3(int[] nums){
         List<List<Integer>> result = new ArrayList<>();
-        ArrayList<Integer> n = new ArrayList<>();
-        result.add(n);
-        adding(n,result,0,nums);
+        List<Integer> num = new ArrayList<>();
+        adding(0,result,num,nums);
         return result;
     }
-    private void adding(ArrayList<Integer> num, List<List<Integer>> result, int n,int[] nums){
-        if (nums.length == n){
+    private void adding(int i,List<List<Integer>> result,List<Integer> num,int[] nums){
+        if (nums.length == i) {
+            result.add(new ArrayList<>(num));
             return;
         }
-        else {
-            num.add(nums[n]);
-            result.add((List<Integer>) num.clone());
-            adding(num, result, n + 1, nums);
-            num.remove(num.size() - 1);
-            adding(num, result, n + 1, nums);
-        }
+        num.add(nums[i]);
+        adding(i + 1,result,num,nums);
+        num.remove(num.size() - 1);
+        adding(i + 1,result,num,nums);
     }
     @Test
-    public void Test3(){
-        int[] nums = {7,8,9};
+    public void test3(){
+        int[] nums = {4,5,6};
         List<List<Integer>> res = subsets3(nums);
         System.out.println(res);
     }

@@ -1,5 +1,3 @@
-import com.sun.corba.se.impl.orb.ParserTable;
-
 public class P376Solution {
     public int wiggleMaxLength(int[] nums) {
         int status = 0;
