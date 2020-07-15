@@ -56,14 +56,15 @@ public class P78Solution {
     public List<List<Integer>> subsets3(int[] nums){
         List<List<Integer>> result = new ArrayList<>();
         List<Integer> num = new ArrayList<>();
-        result.add(num);
         adding(0,result,num,nums);
         return result;
     }
     private void adding(int i,List<List<Integer>> result,List<Integer> num,int[] nums){
-        if (nums.length == i) return;
+        if (nums.length == i) {
+            result.add(new ArrayList<>(num));
+            return;
+        }
         num.add(nums[i]);
-        result.add(new ArrayList<>(num));
         adding(i + 1,result,num,nums);
         num.remove(num.size() - 1);
         adding(i + 1,result,num,nums);
