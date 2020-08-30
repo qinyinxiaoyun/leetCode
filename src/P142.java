@@ -33,3 +33,19 @@ public class P142 {
 
     }
 }
+class test{
+    public static void main(String[] args){
+        int a = 23;
+        String s = Integer.toBinaryString(a);
+        System.out.println(s);
+        String t = Integer.toUnsignedString(a,2);
+        String ans = s.substring(s.length()-1)+s.substring(0,s.length()-1);
+        System.out.println(ans);
+        int c = Integer.parseInt(ans);
+        System.out.println(c);
+        int d = Integer.parseInt(ans,2);
+        System.out.println(d);
+        System.out.println(t);
+
+    }
+}
