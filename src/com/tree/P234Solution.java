@@ -1,4 +1,6 @@
-import org.junit.Test;
+package com.tree;
+
+import com.ListNode;
 
 public class P234Solution {
     public boolean isPalindrome(ListNode head){
