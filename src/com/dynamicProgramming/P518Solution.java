@@ -16,21 +16,16 @@ import java.util.Arrays;
  */
 public class P518Solution {
     public int change(int amount,int[] coins){
-        Arrays.sort(coins);
+        if (amount==0)return 1;
         if (coins.length == 0)return 0;
-        int n = coins.length - 1;
-        return changes(amount,coins,n,0);
-    }
-    private int changes(int amount, int[] coins,int n,int sum) {
-        if (n < 0)return 0;
-        if (amount < 0)return 0;
-        if (amount == 0)return 1;
-        int total = amount;
-        while (total >= coins[n]){
-            sum += changes(amount - coins[n],coins,n-1,sum);
-            total -= coins[n];
+        int n = coins.length;
+        int[] t = new int[amount+1];
+        for (int i = 0; i <n ; i++) {
+            for (int j = 0; j <=amount; j++) {
+                if (j==coins[i])t[j] += 1;
+                if (j>coins[i])t[j] += t[j-coins[i]];
+            }
         }
-        sum += changes(amount,coins,n-1,sum);
-        return sum;
+        return t[amount];
     }
 }
