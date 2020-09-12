@@ -1,5 +1,7 @@
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Stack;
 
 //Given a string containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.
@@ -40,5 +42,10 @@ public class P20Solution {
     public void testcase(){
         String s = "()";
         isValid(s);
+        List<Integer> a = Arrays.asList(1,2,3);
+        Integer[] t = new Integer[a.size()];
+        Integer[] b = a.toArray(t);
+        System.out.println(b[0]);
+        System.out.println(a);
     }
 }
