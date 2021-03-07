@@ -1,0 +1,77 @@
+搜索
+wukong，主要任务
+	融合策略，对精排后的结果调权融合，根据具体业务需求对返回的list打乱重排序插入广告等
+	log测试，在log中查看笔记分数排序是否正确，调权效果如何，是否命中策略
+	api测试，构建测试用例时全面考虑输入的可能性，重点注意输入值为空，null,内容为空，过长时可能出现的错误。兜底条件是服务不能挂，返回的错误必须得到封装。
+模型
+	分为粗排精排，粗排bs精排as，粗排使用es自带函数对召回结果排序，之后使用算法模型训练排序。
+召回
+	从ES中搜索并预处理，如切词，搜索相关词等
+索引
+	从mysql,monngodb，redis中数据记录到es，服务为niumowang
+
+线上环境10.0 包括我们使用的预发布环境，单一实例与生产环境共用数据源
+线下环境10.4 sit环境，由于搜索排序需要线上环境的大量数据，搜索sit部署困难，现使用预发布环境
+
+工作 thrift rpc脚本编写，测试用例编写
+任务 log测试，api测试
+
+dasheng
+poi tab 搜索后标签栏出现的地点tab
+onebox 对于一些精确搜索在标签分类栏之上出现的一个类目框
+list列表 搜索信息结果列表
+poi tab与列表搜索区别是poi tab必须要求在搜索框有query搜索字段，而列表不要求，可能只通过目录选择获取列表
+调用dasheng的主要是社区内服务
+
+外部服务
+以图搜图 cbir输入图片url，返回提取的图片特征列表，再传给labrador搜索具有这些特征的图片 
+labrador不能直接注册在服务网络上，通过consul包装
+curie 服务用circlerank对圈子动态排序
+fls获取商品信息
+knowledgeBase知识库类似于知识图谱的作用，目前只是数据库
+
+服务发现 consul
+consul集群运行在envoy之上，服务将自己的网络位置注册到consul，即将服务名->IP:PORT的KV对记录到consul。使服务端与客户端完全解耦。consul节点有client，转发服务到server,本身不持久化信息；有server,持久化信息到本地；有server-leader，需要负责同步注册信息和健康检测。
+服务网络 service mesh
+微服务之间的通信基础设施层，解耦了应用程序的重试、监控、追踪和服务发现，负责服务间网络调用、限流、熔断和监控。
+k8s 基于容器的集群管理平台
+k8s集群包括一个master节点和几个node节点
+master节点包括api server作为系统对外接口，scheduler负责集群内部资源调度，controllermmanager 负责管理控制器
+node节点包括创建容器的docker，负责监视的kubelet，负责为pod对象提供代理的kube-proxy
+pod是最基本操作单元，内部有一个或多个相关的容器。service是一组提供相同服务的pod的对外访问接口
+service mesh是一种微服务架构，分为数据面与控制面。以istio为例。
+istio中使用envoy作为数据面的proxy，执行流量转发与控制。数据面是包含service及proxy的一个pod。envoy从控制面的注册中心中获取路由转发信息。小红书使用eds部分取代envoy。微服务之间的通信称为东西流量，与服务发现注册无关。服务发现注册与转发规则注册到注册中心，用于南北流量的服务转发负载均衡。
+istio使用pilot作为控制面。包括Envoy 的API与platform adapters等。api网关作为service mesh上的一个服务，负责将外部流量转发到内部相应的服务。小红薯api网关由jarvis逐渐替换为edith。小红薯注册中心有consul与zookeeper
+联调检查 
+在本服务日志检查依赖其他服务的入参出参，可以在查询条件中加入error日志级别过滤，重点查看第三方服务报错以及双活中调用服务是否是预计的区的服务。
+
+python服务客户端
+server端 继承BaseHTTPServer作为Handler 重写do_POST 
+client端 使用urllib发送请求
+
+python中文字符处理
+字符串在python内部默认是unicode原生编码，但在unix系统中编写python文件时需指明文件中中文字符的编码格式（一般在文件开头加"# coding:utf-8"）。在没有将unicode编码转换成其他编码时，如果要在网络上传输，需要用encode('utf-8')将其转换为utf-8编码。
+unicode是一种字符集，为每一个字符分配一个唯一的ID，共有65536个ID；而utf-8是一种编码规则，utf-8是一套以8位为一个编码单位的可变长编码规则，汉字占三个字节。
+
+dasheng服务
+包括垂类搜索（商品，POI，美食，书籍等），在线服务（onebox搜索，POI tab搜索等），离线索引服务，依赖悟空做query理解服务，rankservice笔记排序，es作为索引，以mysql，monngodb，redis做数据源。
+服务包括三部分工作：数据初始化，启动检索服务等待请求，离线任务
+数据初始化环节，从csv文件中获取旧类目品牌等信息，从mysql中获取新信息到list中
+检索服务分为初始化，查缓存和真实计算三步。初始化用wukong理解query生成查询语句，计算出rediskey判断是否在缓存，不在缓存则调用es查询粗选，对查询结果依据过滤策略精选
+离线任务同步商品信息到es
+
+双活方案总结
+1.南北流量双活
+客户端流量打到45两个分区，通过nnginx可以将五区流量引到四区，接着通过kong网关进入容器环境。
+2.东西流量双活
+东西流量是servicemesh架构下的双活流量，流量调度通过envoy与RPC框架。ennvoy一次拿两个区的注册信息，全部探活，envoy优先调度本区。数据面的服务信息注册在k8s，consul和zooskeeper上，控制面从注册中心拉去注册信息
+3.数据层双活
+sql分库分表中间件是myhub，其中mysql的master在四区，slave分布在四区五区，高可用探测节点在三区。为防止网络抖动导致主从来回切换，设置master存活探测等待回应时间延长为15s，在三区与四五区都部署探测节点。
+
+搜索双活
+测试主搜索接口与query理解接口的双活部署，搭建主搜接口的混沌测试环境，测试部署在两个集群上的elasticsearch服务切换与redis备份的兜底返回。
+说明：query理解接口是主搜依赖的s0服务，主搜能够跨区调用query理解接口。服务部署在servicemesh框架集群上，请求流量通过网关到达主搜，判断是否走redis缓存与热备es，主搜服务调用wukonng搜索主体服务，精搜ac服务，广告服务，定位服务，得到结果进行聚合返回。wukong服务依赖es，缓存redis，数据库mysql，mongo与rankservice精排等第三方服务。服务注册在consul，控制面从consul拉取服务信息。
+
+商城服务自动化测试
+从kibana日志中捞取一段时间内的接口请求，从字符串中剥离出参数填充到请求类，测试rpc服务。使用python将服务的thrift文件解析成json格式方便获取服务参数。
+说明：商城价值搜索服务包括垂类在线搜索，离线索引，笔记排序等，使用thrift框架，es作为索引，以mysql，monngodb，redis做数据源。将目录层级等关系存储在mysql，品牌列表等在mongodb，redis作为缓存。

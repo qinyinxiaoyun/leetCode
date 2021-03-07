@@ -1,0 +1,35 @@
+搜索双活
+
+搜索功能与混沌测试是否需要再拆分
+五区es部署 之前有一些 目前四五区es访问分开
+对搜索服务访问 大部分edith内网访问 外网访问通过rpc到searchapi或http到wukong
+
+编写dasheng模块服务测试脚本
+整理dasheng依赖的外部服务接口
+
+wukong与jindouyun
+eds
+apm
+
+dao-mongo-rep movie与其他分开
+dao-mysql mapper与model
+image utNlp
+dependenncy-rpc productservice作用
+manager与service区别
+labrador注册在consul，与edith、envoy、k8s关系
+
+searchApi/searchRequest
+query 正常：包含空格，逗号，加号分隔查询词,空字串 异常：过长，敏感词
+userId 正常：空字串 异常：过长
+posFrom 异常：<0 
+searchId 正常：空字串 异常：过长
+size 0 <0 100
+requestId 正常：空字串 异常：过长 重复
+
+searchapi熔断条件切换条件 服务恢复之后正常调回原来服务 sarchapi与wukong服务发现 自动切换流量由sre还是我们负责 
+
+1.混沌测试弱依赖
+2.双活测试切换四区流量
+3.服务全挂降级
+
+

@@ -1,0 +1,29 @@
+#thrift
+
+thrift是一个轻量级，跨语言的远程服务调用框架，通过自身的IDL接口定义语言，借助代码生成引擎生成各种语言的RPC服务端/客户端模版代码。
+软件栈分为：传输层 定义具体网络传输协议，比如TCP/IP传输
+协议层 定义数据传输格式，负责数据的序列化和反序列化，比如JSON和二进制数据。
+处理层 由具体的IDL生成，封装了具体的底层网络传输和序列化方式
+服务层 整合上述组件，提供具体网络线程/IO服务模型
+
+Thrift协议
+传输协议总体分为文本和二进制协议。为节约带宽提高传输效率，一般使用二进制协议
+
+网络服务模型 阻塞服务模型：simpleServer threadPoolServer
+非阻塞服务模型：NonBlockingServer THsHaServer TThreadedSelectorServer
+父类TServer 静态内部类Args 向TServer提供各种工厂 
+	ProcessorFactory InputTransportFactory OutputTransportFactory
+	InputProtocolFactory OutputProtocalFactoy
+
+TSimpleServer阻塞接受请求，为连接创建处理器对象、输入输出传输通道对象、输入输出协议对象
+TThreadPool解决并发多连接问题，引入连接池 将每个连接封装成workprocess对象，run方法负责业务处理，为连接创建各种对象。
+TNonblocking IO多路复用，对IO事件进行监控和管理，但对读取数据库时间较长的任务等IO费时任务效率也不高，仍是单线程
+THsHaServer 主线程完成数据读取后将数据处理过程交给线程池，异步用于IO事件处理，同步用于handler对rpc的同步处理
+TThreadedSelectorServer
+与HsHa相比将读写IO从主线程中分离出来。有一个AccaptThread用于监听新连接，若干个SelectorThread用于处理IO操作，一个负载均衡器决定将新socket连接分配给哪个selector，一个ExecutorService工作线程池
+
+
+序列化
+二进制和文本传输协议，一般为二进制，包括了bool byte i16 i32 i64 double string binary等基本类型，结构体类型struct,容器类型list set map,异常类型exception,服务类型service
+序列化 object.write(new TBinaryProtocol()) 写入字段开始标记，包括数段类型标示号type和field-id。写入所有字段数据的值，每个字段的字段结束标记，所有字段结束的字段停止标记，写入结构完成标记。
+反序列化 object.read(new TBinnaryProtocol()) 
